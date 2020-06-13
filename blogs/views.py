@@ -11,7 +11,7 @@ def home(request):
     if check_if_logged_in(request): # call this function to check if user is currently logged in
         return redirect('dashhome')
     context={}
-    post = Post.objects.all()
+    post = Post.objects.all().reverse()
     context['post'] = post
     return render(request,'blogs/index.html',context)
 
@@ -113,7 +113,7 @@ def dash_home(request): # home page after user log in
         return redirect('login')
     context['first_name'] = request.session['user'][1]
     context['logged_in'] = True
-    post = Post.objects.all()
+    post = Post.objects.all().reverse()
     context['post'] = post
     return render(request,'dashboard/index.html',context)
 
