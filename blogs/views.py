@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import User,Post
 import hashlib, uuid
+from .forms import PostUploadForm
 
 # Create your views here.
 #REQUEST HANDLERS
@@ -94,45 +95,73 @@ def dashboard(request): # This func will redirect you to the user's dashboard
     context = {}
     try:
         if request.session['user']:
-            context['logged_in'] = True;
-            context['first_name'] = request.session['user'][1];
+            context['logged_in'] = True
+            context['first_name'] = request.session['user'][1]
+            context['form'] = PostUploadForm()
             return render(request,'dashboard/dashboard.html',context)
         else:
             context['error'] = "Please log in!"
             return render(request,'blogs/login.html',context)
     except Exception as error:
         context['error'] = "Please log in!"
+        print(error)
         return render(request,'blogs/login.html',context)
 
 def dash_home(request): # home page after user log in
     context = {}
     if not check_if_logged_in(request):
         return redirect('login')
-    context['first_name'] = request.session['user'][1];
+    context['first_name'] = request.session['user'][1]
     context['logged_in'] = True
     post = Post.objects.all()
     context['post'] = post
-    print(post)
     return render(request,'dashboard/index.html',context)
 
 def submitPost(request):
     context = {}
-    subject = request.POST.get('subject')
-    text = request.POST.get('textfield')
+    if request.method == 'POST':
+        form = PostUploadForm(request.POST,request.FILES)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.user_id = request.session['user'][3]
+            obj.user_email = request.session['user'][0]
+            obj.display_text = trimDescription(obj.description)
+            print(f'DESCRIPTION - - - {obj.description}')
+            obj.save()
+            return redirect('dashhome')
+        else:
+            context['error'] = 'Error submitting the post!'
+            return render(request,"dashboard/dashboard.html",context)
+    else: 
+        return HttpResponse({"Error":'GET / Method is not allowed!'})
+
+def trimDescription(text):
     if len(text) > 35: # Chcking the lenght of the text to simplify it to a display text
-        display_text = text[0:35] + '...'
+        display_text = text[0:34] + '...'
     else:
         display_text = text
-    try:
-        user_id = request.session['user'][3]
-        user_email = request.session['user'][0]
-        post = Post(description=text,subject=subject,display_text=display_text,user_id=user_id,user_email=user_email)
-        post.save()
-    except Exception as error:
-        context['error'] = 'Error submitting the post!'
-        print(f'Error submitting post! {error}')
-        return render(request,'dashboard/dashboard.html',context)
-    return redirect('home')
+    return display_text
+
+# def submitPost(request):
+#     context = {}
+#     subject = request.POST.get('subject')
+#     text = request.POST.get('textfield')
+#     img = request.POST.get('img')
+#     print(img)
+#     if len(text) > 35: # Chcking the lenght of the text to simplify it to a display text
+#         display_text = text[0:35] + '...'
+#     else:
+#         display_text = text
+#     try:
+#         user_id = request.session['user'][3]
+#         user_email = request.session['user'][0]
+#         post = Post(description=text,subject=subject,display_text=display_text,user_id=user_id,user_email=user_email,img=img)
+#         post.save()
+#     except Exception as error:
+#         context['error'] = 'Error submitting the post!'
+#         print(f'Error submitting post! {error}')
+#         return render(request,'dashboard/dashboard.html',context)
+#     return redirect('home')
 
 def readPost(request):
     context = {}
@@ -140,7 +169,7 @@ def readPost(request):
     post = Post.objects.filter(id=post_id).first()
     print(post)
     if check_if_logged_in(request):
-        context['first_name'] = request.session['user'][1];
+        context['first_name'] = request.session['user'][1]
         context['logged_in'] = True
     context['post'] = post
     return render(request,'dashboard/readpost.html',context)

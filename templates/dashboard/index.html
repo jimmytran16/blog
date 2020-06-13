@@ -12,6 +12,14 @@
     white-space: pre;
   }
 
+  h2 {
+    margin: 0;
+  }
+
+  .display-text {
+    overflow: hidden;
+  }
+
   .col-md-4 {
     padding: 10px !important;
   }
@@ -75,12 +83,14 @@
     {% for i in post %}
     <div class="col-md-4">
       <div class="card">
-        <img src="https://www.w3schools.com/w3images/team1.jpg" alt="Jane" style="width:100%">
+        {% if i.img %}
+        <img src="{{i.img.url}}" alt="Jane" style="max-width:357px;max-height:250px;">
+        {% endif %}
         <div class="container">
           <h2>{{i.subject}}</h2>
           <p class="title">{{i.date}}</p>
           <p>{{i.display_text}}</p>
-          <p>{{i.user_email}}</p>
+          <p>By: {{i.user_email}}</p>
           <a href="readPost?id={{i.id}}">
             <p><button class="button">Read More</button></p>
           </a>

@@ -6,6 +6,9 @@
   img {
     padding: 20px;
   }
+  .img-container{
+    text-align: center;
+  }
   .subject-text{
     text-align: center;
   }
@@ -18,15 +21,27 @@
   .email-paragraph{
     padding-right: 10px;
   }
+  .description-text{
+    word-break: break-word;
+  }
+  @media (max-width: 1200px){
+    img{
+      width: 100%!important;
+    }
+  }
 </style>
 
 <div class="container">
   <h1 class="subject-text">{{post.subject}}</h1>
   <div class="small-text"><small>{{post.user_email}}   {{post.date}}</small></div>
-  <img src="https://www.w3schools.com/w3images/team1.jpg" alt="Jane" style="width:100%">
+  {% if post.img %}
+  <div class="img-container">
+  <img src="{{post.img.url}}" alt="Jane" style="max-width:1140px;max-height:550px;">
+  </div>
+  {% endif %}
   <div class="row">
     <div class="col-lg-10">
-      <p>{{post.description}}</p>
+      <p class="description-text">{{post.description|linebreaks}}</p>
     </div>
   </div>
 </div>

@@ -22,6 +22,7 @@ class Post(models.Model):
     user_id = models.IntegerField()
     user_email = models.EmailField()
     date = models.DateTimeField(default=timezone.now)
+    img = models.ImageField(upload_to="posts/",blank=True)
 
     def __str__(self):
         return f'{self.subject} -- {self.description}'
