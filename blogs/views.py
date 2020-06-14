@@ -7,11 +7,11 @@ from .forms import PostUploadForm
 # Create your views here.
 #REQUEST HANDLERS
 
-def home(request):
+def home(request):  
     if check_if_logged_in(request): # call this function to check if user is currently logged in
         return redirect('dashhome')
     context={}
-    post = Post.objects.all().reverse()
+    post = reversed(Post.objects.all())
     context['post'] = post
     return render(request,'blogs/index.html',context)
 
@@ -87,6 +87,7 @@ def submitLogin(request):
         return redirect('dashhome')
 
 def auth_login(request,user): #log user in by setting a list of the users attributes into the session
+    user.first_name = user.first_name.title() + ' ' + user.last_name.title()
     user = [user.email,user.first_name,user.last_name,user.id]
     request.session['user'] = user
     return
@@ -110,10 +111,10 @@ def dashboard(request): # This func will redirect you to the user's dashboard
 def dash_home(request): # home page after user log in
     context = {}
     if not check_if_logged_in(request):
-        return redirect('login')
+        return redirect('home')
     context['first_name'] = request.session['user'][1]
     context['logged_in'] = True
-    post = Post.objects.all().reverse()
+    post = reversed(Post.objects.all())
     context['post'] = post
     return render(request,'dashboard/index.html',context)
 
@@ -126,7 +127,6 @@ def submitPost(request):
             obj.user_id = request.session['user'][3]
             obj.user_email = request.session['user'][0]
             obj.display_text = trimDescription(obj.description)
-            print(f'DESCRIPTION - - - {obj.description}')
             obj.save()
             return redirect('dashhome')
         else:
@@ -167,7 +167,6 @@ def readPost(request):
     context = {}
     post_id = request.GET.get('id')
     post = Post.objects.filter(id=post_id).first()
-    print(post)
     if check_if_logged_in(request):
         context['first_name'] = request.session['user'][1]
         context['logged_in'] = True

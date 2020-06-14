@@ -25,4 +25,4 @@ class Post(models.Model):
     img = models.ImageField(upload_to="posts/",blank=True)
 
     def __str__(self):
-        return f'{self.subject} -- {self.description}'
+        return f'{self.subject} -- {self.user_email}'

@@ -89,7 +89,9 @@ DATABASES = {
         'HOST': os.environ.get('HOST'),
         'PORT': os.environ.get('PORT_NUM'),
     }
+
 }
+
 
 
 # Password validation
@@ -139,6 +141,7 @@ AWS_LOCATION = os.environ.get('AWS_LOCATION')
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl':'max-age=86400'
 }
+
 
 STATIC_URL = f'{AWS_S3_ENDPOINT_URL}/{AWS_LOCATION}/' #url to the static files which are stored on digital ocean
 STATICFILES_DIRS = [

@@ -1,6 +1,6 @@
 {% extends 'dashboard/base.html' %}
 {% block title %}Read{% endblock %}
-{% block name %}Some Post{% endblock %}
+{% block name %}Post{% endblock %}
 {% block content %}
 <style media="screen">
   img {
@@ -36,7 +36,7 @@
   <div class="small-text"><small>{{post.user_email}}   {{post.date}}</small></div>
   {% if post.img %}
   <div class="img-container">
-  <img src="{{post.img.url}}" alt="Jane" style="max-width:1140px;max-height:550px;">
+  <img src="{{post.img.url}}" alt="Jane" style="max-width:1100px;max-height:550px;">
   </div>
   {% endif %}
   <div class="row">
