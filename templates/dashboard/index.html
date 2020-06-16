@@ -1,5 +1,5 @@
 {% extends 'dashboard/base.html' %}
-
+{% load static %}
 {% block title %}Home{% endblock %}
 {% block name %}Home{% endblock %}
 {% block content %}
@@ -8,21 +8,18 @@
     padding-top: 20px !important;
   }
 
-  img{
-    max-width:357px;
-    max-height:250px;
+  .col-md-4 .card .post-img {
+    max-width: 357px;
+    max-height: 250px;
   }
 
   p {
     white-space: pre;
+    overflow: hidden;
   }
 
   h2 {
     margin: 0;
-  }
-
-  .display-text {
-    overflow: hidden;
   }
 
   .col-md-4 {
@@ -44,12 +41,14 @@
       display: block;
     }
   }
-  @media screen and (max-width: 650px) {
-    img{
-      width: 100%!important;
+
+  @media screen and (max-width: 768px) {
+    .col-md-4 .card .post-img  {
+      width: 100% !important;
       max-width: none;
     }
   }
+
   /* Add some shadows to create a card effect */
   .card {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
@@ -87,6 +86,14 @@
   .button:hover {
     background-color: #555;
   }
+
+  /* Profile picture image */
+  .avatar {
+    vertical-align: middle;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+  }
 </style>
 <div class="container">
   <div class="row">
@@ -94,13 +101,13 @@
     <div class="col-md-4">
       <div class="card">
         {% if i.img %}
-        <img src="{{i.img.url}}" alt="Jane" style="">
+        <img class="post-img" src="{{i.img.url}}" alt="Jane" style="">
         {% endif %}
         <div class="container">
           <h2>{{i.subject}}</h2>
           <p class="title">{{i.date}}</p>
           <p>{{i.display_text}}</p>
-          <p>By: {{i.user_email}}</p>
+          <p>By: {{i.user_email}} {% if not i.author.profile %}<img src="{% static 'img/blank_profile.jpg' %}" alt="Avatar" class="avatar"> {% else %} <img src="{{ i.author.profile.url }}" alt="Avatar" class="avatar">{% endif %}</p>
           <a href="readPost?id={{i.id}}">
             <p><button class="button">Read More</button></p>
           </a>

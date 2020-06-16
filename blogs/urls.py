@@ -14,4 +14,6 @@ urlpatterns = [
     path('home',views.dash_home,name='dashhome'),
     path('submitPost',views.submitPost,name='submitPost'),
     path('readPost',views.readPost,name='readPost'),
+    path('settings',views.settingsPage,name='settingsPage'),
+    path('changeProfile/<int:id>',views.changeProfile,name='changeProfile'), #passing the user id as an arguemnt into the path
 ]

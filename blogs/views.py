@@ -3,15 +3,16 @@ from django.http import HttpResponse
 from .models import User,Post
 import hashlib, uuid
 from .forms import PostUploadForm
+from .ProfilePicForm import ProfilePicForm
 
 # Create your views here.
 #REQUEST HANDLERS
 
-def home(request):  
+def home(request):
     if check_if_logged_in(request): # call this function to check if user is currently logged in
         return redirect('dashhome')
     context={}
-    post = reversed(Post.objects.all())
+    post = reversed(validatePostPictures(Post.objects.all()))
     context['post'] = post
     return render(request,'blogs/index.html',context)
 
@@ -114,26 +115,70 @@ def dash_home(request): # home page after user log in
         return redirect('home')
     context['first_name'] = request.session['user'][1]
     context['logged_in'] = True
-    post = reversed(Post.objects.all())
+    post = reversed(validatePostPictures(Post.objects.all()))
+    print(f'Dashhome -- {post}')
     context['post'] = post
     return render(request,'dashboard/index.html',context)
 
 def submitPost(request):
     context = {}
     if request.method == 'POST':
+        user = User.objects.filter(pk=str(request.session['user'][3])).first()
         form = PostUploadForm(request.POST,request.FILES)
         if form.is_valid():
             obj = form.save(commit=False)
-            obj.user_id = request.session['user'][3]
-            obj.user_email = request.session['user'][0]
-            obj.display_text = trimDescription(obj.description)
+            obj.user_id = request.session['user'][3] #assign the post to the current user's user_id from the session
+            obj.user_email = request.session['user'][0] #assign the email of the user to the post
+            obj.display_text = trimDescription(obj.description) #trim the description to make it fit to the card display
+            obj.author = user
             obj.save()
             return redirect('dashhome')
         else:
             context['error'] = 'Error submitting the post!'
             return render(request,"dashboard/dashboard.html",context)
-    else: 
+    else:
         return HttpResponse({"Error":'GET / Method is not allowed!'})
+
+def changeProfile(request,id):
+    context = {}
+    if request.method == 'POST':
+        instance = User.objects.filter(pk = id).first()
+        form = ProfilePicForm(request.POST,request.FILES,instance=instance)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.save()
+            return redirect('settingsPage')
+        else:
+            context['error'] = 'Error uploading profile picture'
+            return render(request,"dashboard/dashboard.html",context)
+
+def settingsPage(request): #handler to go to the settings page of user's profile
+    context =  {}
+    if not check_if_logged_in(request):
+        return redirect('login')
+    else:
+        user = User.objects.filter(pk=request.session['user'][3]).first()
+        try:
+            profile = user.profile.url
+        except Exception as error:
+            print(f'PROFILE - - {error}')
+            profile = None
+        context['user'] = user
+        context['profile'] = profile
+        context['form'] = ProfilePicForm()
+        context['first_name'] = request.session['user'][1]
+        context['logged_in'] = True
+        return render(request,'dashboard/settings.html',context)
+
+
+def validatePostPictures(posts):
+    print(f'VALIDATE() {posts}')
+    for post in posts:
+        try:
+            post = post.author.profile.url
+        except Exception:
+            post.author.profile = False
+    return posts
 
 def trimDescription(text):
     if len(text) > 35: # Chcking the lenght of the text to simplify it to a display text
@@ -167,6 +212,10 @@ def readPost(request):
     context = {}
     post_id = request.GET.get('id')
     post = Post.objects.filter(id=post_id).first()
+    try:
+        img = post.author.profile
+    except Exception:
+        post.author.profile = False #assign false to the profile attribute of user since there is no existing profile picture
     if check_if_logged_in(request):
         context['first_name'] = request.session['user'][1]
         context['logged_in'] = True

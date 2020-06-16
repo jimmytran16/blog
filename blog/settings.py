@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ.get('SEC_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
 
 # ALLOWED_HOSTS = []
 ALLOWED_HOSTS = [
@@ -89,7 +89,6 @@ DATABASES = {
         'HOST': os.environ.get('HOST'),
         'PORT': os.environ.get('PORT_NUM'),
     }
-
 }
 
 
@@ -141,7 +140,6 @@ AWS_LOCATION = os.environ.get('AWS_LOCATION')
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl':'max-age=86400'
 }
-
 
 STATIC_URL = f'{AWS_S3_ENDPOINT_URL}/{AWS_LOCATION}/' #url to the static files which are stored on digital ocean
 STATICFILES_DIRS = [

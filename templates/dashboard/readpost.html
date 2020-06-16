@@ -1,47 +1,59 @@
 {% extends 'dashboard/base.html' %}
+{% load url_target_blank %}
+{% load static %}
 {% block title %}Read{% endblock %}
 {% block name %}Post{% endblock %}
 {% block content %}
+
 <style media="screen">
   img {
     padding: 20px;
   }
-  .img-container{
+
+  .img-container {
     text-align: center;
   }
-  .subject-text{
+
+  .subject-text {
     text-align: center;
   }
-  .small-text{
+
+  .small-text {
     text-align: center;
   }
-  .col-lg-10{
+
+  .col-lg-10 {
     margin: auto;
   }
-  .email-paragraph{
+
+  .email-paragraph {
     padding-right: 10px;
   }
-  .description-text{
+
+  .description-text {
     word-break: break-word;
   }
-  @media (max-width: 1200px){
-    img{
-      width: 100%!important;
+
+  @media (max-width: 1200px) {
+    img {
+      width: 100% !important;
     }
   }
 </style>
 
 <div class="container">
   <h1 class="subject-text">{{post.subject}}</h1>
-  <div class="small-text"><small>{{post.user_email}}   {{post.date}}</small></div>
+  <div class="small-text"><small>{{post.user_email}} {{post.date}} {% if post.author.profile %}<img src="{{post.author.profile.url}}" style="width:75px!important;height:75px!important;border-radius:50%;">{% else %}<img
+        src="{% static 'img/blank_profile.jpg' %}" style="width:75px!important;height:75px!important;border-radius:50%;"> {% endif %}</small>
+  </div>
   {% if post.img %}
   <div class="img-container">
-  <img src="{{post.img.url}}" alt="Jane" style="max-width:1100px;max-height:550px;">
+    <img src="{{post.img.url}}" alt="Jane" style="max-width:1100px;max-height:550px;">
   </div>
   {% endif %}
   <div class="row">
     <div class="col-lg-10">
-      <p class="description-text">{{post.description|linebreaks}}</p>
+      <p class="description-text">{{ post.description | urlize | url_target_blank | linebreaks }}</p>
     </div>
   </div>
 </div>

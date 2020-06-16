@@ -9,7 +9,12 @@ class PostUploadForm(forms.ModelForm):
 
     class Meta:
         model = Post
+        widgets = { #Attach the class attributes to the fields to be able to manually style it
+            'subject': forms.TextInput(attrs={'class': 'subjectClass'}),
+        }
         fields = [
             'subject','description','img'
         ]
-
+        labels = {
+            'img':'Image',
+        }
