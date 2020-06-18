@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import User,Post
 import hashlib, uuid
 from .forms import PostUploadForm
 from .ProfilePicForm import ProfilePicForm
 
 # Create your views here.
-#REQUEST HANDLERS
+# REQUEST HANDLERS
 
 def home(request):
     if check_if_logged_in(request): # call this function to check if user is currently logged in
@@ -53,7 +53,7 @@ def registerSubmit(request): #Register form submitted
             return render(request,'blogs/register.html',context)
         return render(request,'blogs/login.html',context)
     else:
-        return HttpResponse({"Error":"GET/ METHOD not allowed!"})
+        return JsonResponse({"Error":"GET/ METHOD not allowed!"})
 
 def check_email_duplicate(email): # func to determine if an email already exists isn the database
     try:
@@ -151,6 +151,59 @@ def changeProfile(request,id):
         else:
             context['error'] = 'Error uploading profile picture'
             return render(request,"dashboard/dashboard.html",context)
+    else:
+        return JsonResponse({"Error":"Request not allowed!"})
+
+def usersPosts(request):
+    context = {}
+    if not check_if_logged_in(request): #authenticate the user
+        return redirect('login')
+    else:
+        context['first_name'] = request.session['user'][1]
+        context['logged_in'] = True
+        try:
+            users_post = Post.objects.filter(user_email = request.session['user'][0])
+            print(users_post)
+            context["post"] = users_post
+        except Exception as error:
+            context["post"] = None
+        return render(request,'dashboard/myposts.html',context)
+
+def editPost(request,id): #shows the user's post, and getting the post ID to query for content
+    context = {}
+    if not check_if_logged_in(request):
+        return redirect('login')
+    else:
+        post = Post.objects.filter(pk=id).first()
+        context['post'] = post
+        context['first_name'] = request.session['user'][1]
+        context['logged_in'] = True
+        return render(request,'dashboard/editpostpage.html',context)
+
+def comfirmEdits(request,id): #updates the user's post
+    context = {}
+    if request.method == "POST":
+        _new_description = request.POST.get('description') 
+        _post_to_edit = Post.objects.filter(pk = id).first()
+        _post_to_edit.description = _new_description
+        _post_to_edit.display_text = trimDescription(_new_description) # trim the description text to save to the display_text for the post
+        try:
+            _post_to_edit.save()
+        except Exception as error:
+            print(f'Failed to update post {error}')
+        return redirect('dashhome')
+    else:
+        return JsonResponse({"Error":"Method POST not allowed!"})
+
+def deletePost(request,id): #delete the post. Will get a Post ID in the parameter to delete the specfic post
+    context = {}
+    try:
+        Post.objects.filter(pk=id).delete() #query to the database to get the Post object, then deletes it
+    except Exception as error:
+        context['error'] = "Failed to delete the post! Please try again!"
+        return render(request,'dashboard/editpostpage.html',context)
+    return redirect("dashhome") 
+
 
 def settingsPage(request): #handler to go to the settings page of user's profile
     context =  {}
@@ -172,7 +225,6 @@ def settingsPage(request): #handler to go to the settings page of user's profile
 
 
 def validatePostPictures(posts):
-    print(f'VALIDATE() {posts}')
     for post in posts:
         try:
             post = post.author.profile.url
@@ -187,26 +239,6 @@ def trimDescription(text):
         display_text = text
     return display_text
 
-# def submitPost(request):
-#     context = {}
-#     subject = request.POST.get('subject')
-#     text = request.POST.get('textfield')
-#     img = request.POST.get('img')
-#     print(img)
-#     if len(text) > 35: # Chcking the lenght of the text to simplify it to a display text
-#         display_text = text[0:35] + '...'
-#     else:
-#         display_text = text
-#     try:
-#         user_id = request.session['user'][3]
-#         user_email = request.session['user'][0]
-#         post = Post(description=text,subject=subject,display_text=display_text,user_id=user_id,user_email=user_email,img=img)
-#         post.save()
-#     except Exception as error:
-#         context['error'] = 'Error submitting the post!'
-#         print(f'Error submitting post! {error}')
-#         return render(request,'dashboard/dashboard.html',context)
-#     return redirect('home')
 
 def readPost(request):
     context = {}
@@ -229,6 +261,7 @@ def auth_logout(request):
     except Exception as error:
         print(f'auth_logout error --- {error}')
     return
+    
 def authenticate(username,password): #authenticate the user log in crudentials
     user = User.objects.filter(email=username).first() #query the database for the user with the username - returns None if there is no existing user
     if user is not None:

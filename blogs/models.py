@@ -18,7 +18,7 @@ class User(models.Model):
         return f'Email: {self.email} Name: {self.first_name},{self.last_name}'
 
 class Post(models.Model):
-    author = models.ForeignKey(User,on_delete=models.CASCADE) #foreign key -- determines the author based on the user
+    author = models.ForeignKey(User,on_delete=models.CASCADE) #foreign key -- assigns the author to the post
     description = models.TextField()
     subject = models.CharField(max_length=255,default=None)
     display_text = models.CharField(max_length=40)
