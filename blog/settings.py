@@ -141,6 +141,7 @@ AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl':'max-age=86400'
 }
 
+
 STATIC_URL = f'{AWS_S3_ENDPOINT_URL}/{AWS_LOCATION}/' #url to the static files which are stored on digital ocean
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')

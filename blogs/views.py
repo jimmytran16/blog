@@ -210,7 +210,7 @@ def settingsPage(request): #handler to go to the settings page of user's profile
     if not check_if_logged_in(request):
         return redirect('login')
     else:
-        user = User.objects.filter(pk=request.session['user'][3]).first()
+        user = User.objects.filter(pk=request.session['user'][3]).first() #query to get the users information from the Users model
         try:
             profile = user.profile.url
         except Exception as error:
@@ -285,3 +285,32 @@ def logout(request):
     context={}
     auth_logout(request)
     return redirect('home')
+
+
+# SETTINGS EDITS
+def updatePassword(request):
+    #validate if the user is logged in
+    #---------------------------------
+    #---------------------------------
+    context = {}
+    if request.method == 'POST':
+        _password = request.POST.get('edit_password') #get the password from the field
+        _user = User.objects.filter(pk=request.session['user'][3]).first() # get the user object by getting the user id from the session
+        SALT = uuid.uuid4().hex #generate a random salt
+        COMBINED_PASS_SALT = _password + SALT #combine the salt with the password 
+        _hashed_password = hashlib.sha512(COMBINED_PASS_SALT.encode('utf-8')).hexdigest() # encode the combined password and salt to UTF-8 format
+        
+        # update the salt and the password into the database 
+        _user.salt = SALT
+        _user.password = _hashed_password
+        try: #handle the exception for updating the user
+            _user.save()
+        except Exception as error:
+            print("ERROR SAVING THE PASSWORD!")
+            context['Error'] = 'Error updating password'
+            return JsonResponse(context)
+        return redirect('settingsPage')
+
+    elif request.method == 'GET':
+        context['Error'] = 'CANNOT do GET/ request'
+        return JsonResponse(context)
