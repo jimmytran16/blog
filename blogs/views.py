@@ -162,7 +162,8 @@ def usersPosts(request):
         context['first_name'] = request.session['user'][1]
         context['logged_in'] = True
         try:
-            users_post = Post.objects.filter(user_email = request.session['user'][0])
+            _user = User.objects.filter(pk=request.session['user'][3]).first()
+            users_post = Post.objects.filter(author = _user)
             print(users_post)
             context["post"] = users_post
         except Exception as error:
@@ -314,3 +315,34 @@ def updatePassword(request):
     elif request.method == 'GET':
         context['Error'] = 'CANNOT do GET/ request'
         return JsonResponse(context)
+
+import time
+
+#This handler is to update the first name, last name, and email of the user
+def updateSettingsInformation(request):
+    context = {}
+    if request.method == "POST":
+        _first_name = request.POST.get('edit_first')  #extract fields from the body  
+        _last_name = request.POST.get('edit_last')    
+        _email_address = request.POST.get('edit_email')  
+        try:
+            ## Query the user object and then give it new values
+            _current_user = User.objects.filter(pk=request.session['user'][3]).first()
+            _current_user.first_name = _first_name
+            _current_user.last_name = _last_name
+            _current_user.email = _email_address
+            updateUserSessionValues(request,_current_user)
+            _current_user.save()
+        except Exception as error:
+            print(f'Error updating the user email/first/last- {error}')
+            context['error'] = 'Error updating settings'
+            return JsonResponse(context)
+        time.sleep(3) #sleep thread for 3 seconds    
+        return redirect('settingsPage')  
+    elif request.method == "GET":
+        context['error'] = 'GET METHOD IS NOT ALLOWED'
+        return JsonResponse(context)
+
+def updateUserSessionValues(request,user):
+    #update the user session dictionary to a new list
+    request.session['user'] = [user.email,user.first_name.title() + ' ' + user.last_name.title(),user.last_name,user.id]

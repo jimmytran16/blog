@@ -22,4 +22,5 @@ urlpatterns = [
     path('deletePost/<int:id>',views.deletePost,name='deletePost'), # maps to the function that will delete the post
     #settings edits
     path('settings/updatePassword',views.updatePassword,name='updatePassword'), #update your password from settings 
+    path('settings/updateInformation',views.updateSettingsInformation,name='updateInformation'), #update your password from settings 
 ]

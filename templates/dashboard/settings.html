@@ -102,32 +102,32 @@
                     </table>
                 </div>
                 <div class="tab-pane" id="edit">
-                    <form role="form">
+                    <form method="POST" action="/settings/updateInformation"> {% csrf_token %}
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">First name</label>
                             <div class="col-lg-9">
-                                <input class="form-control" name="edit_first" type="text"
-                                    value="{{user.first_name|title}}">
+                                <input onChange="checkIfCrudentialsAreDifferent();" class="form-control" name="edit_first" id="edit_first" type="text"
+                                    value="{{user.first_name|title}}" required>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">Last name</label>
                             <div class="col-lg-9">
-                                <input class="form-control" type="text" name="edit_last"
-                                    value="{{user.last_name|title}}">
+                                <input onChange="checkIfCrudentialsAreDifferent();" class="form-control" type="text" name="edit_last" id="edit_last"
+                                    value="{{user.last_name|title}}" required>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">Email</label>
                             <div class="col-lg-9">
-                                <input class="form-control" type="email" name="edit_email" value="{{user.email}}">
+                                <input onChange="checkIfCrudentialsAreDifferent();" class="form-control" type="email" id="edit_email" name="edit_email" value="{{user.email}}" required>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label"></label>
                             <div class="col-lg-9">
                                 <input type="reset" class="btn btn-secondary" value="Cancel">
-                                <input type="submit" class="btn btn-primary" value="Save Changes">
+                                <input type="submit" class="btn btn-primary" id="submit-change-btn" value="Save Changes">
                             </div>
                         </div>
                     </form>
@@ -213,6 +213,26 @@
         </div>
         <!-- JQuery -->
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script>
+            var first_name = document.getElementById("edit_first").value;
+            var last_name = document.getElementById("edit_last").value;
+            var email_address = document.getElementById("edit_email").value;
+            document.getElementById("submit-change-btn").disabled = true; //disable the button as default
+            //This function will compare to see if the user's first,last,and email are the same
+            //Purpose of this is so that users arent able to trigger a change if the first,last,and email are currently the same                        
+            function checkIfCrudentialsAreDifferent(){
+                const button = document.getElementById("submit-change-btn");
+                console.log("INSIDE checkifcrudentsaredifferent FUNCTION");
+                console.log(first_name,last_name,email_address);
+                const fn = document.getElementById("edit_first").value;
+                const ln = document.getElementById("edit_last").value;
+                const em = document.getElementById("edit_email").value;
+                console.log("Old records",first_name,last_name,email_address);
+                console.log("New records",fn,ln,em);
+                if(first_name == fn && last_name ==ln && email_address == em){console.log("TRUE");button.disabled = true;}
+                else{console.log("FALSE");button.disabled = false;}      
+            }
+        </script>
         <script text="text/javascript">
             function checkPasswordMatch() {
                 var password = $("#first-pass").val();
