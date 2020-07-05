@@ -3,13 +3,14 @@ from django.contrib import admin
 from django.urls import path
 from . import views
 
+#url mappings to the views functions
 urlpatterns = [
     path('',views.home,name='home'),
     path('register',views.register,name='register'),
     path('submit',views.registerSubmit,name='registerSubmit'),
     path('login',views.login,name='login'),
     path('loginUser',views.submitLogin,name='submitLogin'),
-    path('logout',views.logout,name='logout'), 
+    path('logout',views.logout,name='logout'),
     path('dashboard',views.dashboard,name='dashboard'), #user's dashboard
     path('home',views.dash_home,name='dashhome'), #home page of the user (when they log in)
     path('submitPost',views.submitPost,name='submitPost'), #post submission
@@ -21,6 +22,6 @@ urlpatterns = [
     path('comfirmEdits/<int:id>',views.comfirmEdits,name='comfirmEdits'), #comfirm the edits, passing in the post id as a parameter
     path('deletePost/<int:id>',views.deletePost,name='deletePost'), # maps to the function that will delete the post
     #settings edits
-    path('settings/updatePassword',views.updatePassword,name='updatePassword'), #update your password from settings 
-    path('settings/updateInformation',views.updateSettingsInformation,name='updateInformation'), #update your password from settings 
+    path('settings/updatePassword',views.updatePassword,name='updatePassword'), #update your password from settings
+    path('settings/updateInformation',views.updateSettingsInformation,name='updateInformation'), #update your password from settings
 ]

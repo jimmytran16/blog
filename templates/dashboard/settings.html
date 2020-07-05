@@ -106,21 +106,21 @@
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">First name</label>
                             <div class="col-lg-9">
-                                <input onChange="checkIfCrudentialsAreDifferent();" class="form-control" name="edit_first" id="edit_first" type="text"
+                                <input onchange="checkIfCrudentialsAreDifferent();" class="form-control" name="edit_first" id="edit_first" type="text"
                                     value="{{user.first_name|title}}" required>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">Last name</label>
                             <div class="col-lg-9">
-                                <input onChange="checkIfCrudentialsAreDifferent();" class="form-control" type="text" name="edit_last" id="edit_last"
+                                <input onchange="checkIfCrudentialsAreDifferent();" class="form-control" type="text" name="edit_last" id="edit_last"
                                     value="{{user.last_name|title}}" required>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">Email</label>
                             <div class="col-lg-9">
-                                <input onChange="checkIfCrudentialsAreDifferent();" class="form-control" type="email" id="edit_email" name="edit_email" value="{{user.email}}" required>
+                                <input onchange="checkIfCrudentialsAreDifferent();" class="form-control" type="email" id="edit_email" name="edit_email" value="{{user.email}}" required>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -222,8 +222,6 @@
             //Purpose of this is so that users arent able to trigger a change if the first,last,and email are currently the same                        
             function checkIfCrudentialsAreDifferent(){
                 const button = document.getElementById("submit-change-btn");
-                console.log("INSIDE checkifcrudentsaredifferent FUNCTION");
-                console.log(first_name,last_name,email_address);
                 const fn = document.getElementById("edit_first").value;
                 const ln = document.getElementById("edit_last").value;
                 const em = document.getElementById("edit_email").value;

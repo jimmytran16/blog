@@ -1,30 +1,30 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse,HttpResponseRedirect
 from .models import User,Post
 import hashlib, uuid
 from .forms import PostUploadForm
 from .ProfilePicForm import ProfilePicForm
+from .decorators.decor import login_required, go_to_dash_if_logged_in  #import the decorator functions from package
+# from django.views.decorators.cache import cache_page # decorator for caching the view
 
 # Create your views here.
 # REQUEST HANDLERS
 
+@go_to_dash_if_logged_in
 def home(request):
-    if check_if_logged_in(request): # call this function to check if user is currently logged in
-        return redirect('dashhome')
     context={}
     post = reversed(validatePostPictures(Post.objects.all()))
+    print('just CALLED query!')
     context['post'] = post
     return render(request,'blogs/index.html',context)
 
+@go_to_dash_if_logged_in
 def register(request): #Register webpage
-    if check_if_logged_in(request):
-        return redirect('dashboard')
     context={}
     return render(request,'blogs/register.html')
 
+@go_to_dash_if_logged_in
 def registerSubmit(request): #Register form submitted
-    if check_if_logged_in(request):
-        return redirect('dashboard')
     if request.method == 'POST':
         context = {}
         #get inputs from the form field
@@ -66,9 +66,8 @@ def check_email_duplicate(email): # func to determine if an email already exists
         print(f'check_email_duplicate() {error}')
         return True
 
+@go_to_dash_if_logged_in
 def login(request):
-    if check_if_logged_in(request):
-        return redirect('dashboard')
     context = {}
     return render(request,'blogs/login.html')
 
@@ -93,32 +92,36 @@ def auth_login(request,user): #log user in by setting a list of the users attrib
     request.session['user'] = user
     return
 
+@login_required
 def dashboard(request): # This func will redirect you to the user's dashboard
     context = {}
-    try:
-        if request.session['user']:
+    if request.method == 'GET':
+        try:
             context['logged_in'] = True
             context['first_name'] = request.session['user'][1]
             context['form'] = PostUploadForm()
             return render(request,'dashboard/dashboard.html',context)
-        else:
+        except Exception as error:
             context['error'] = "Please log in!"
+            print(error)
             return render(request,'blogs/login.html',context)
-    except Exception as error:
-        context['error'] = "Please log in!"
-        print(error)
-        return render(request,'blogs/login.html',context)
+    elif request.method == 'POST':
+        context['error'] = 'CANT POST /'
+        return HttpResponse(context)
 
+@login_required
 def dash_home(request): # home page after user log in
     context = {}
-    if not check_if_logged_in(request):
-        return redirect('home')
-    context['first_name'] = request.session['user'][1]
-    context['logged_in'] = True
-    post = reversed(validatePostPictures(Post.objects.all()))
-    print(f'Dashhome -- {post}')
-    context['post'] = post
-    return render(request,'dashboard/index.html',context)
+    if request.method == 'GET':
+        context['first_name'] = request.session['user'][1]
+        context['logged_in'] = True
+        post = validatePostPictures(Post.objects.all())
+        print(f'Dashhome -- {post}')
+        context['post'] = post
+        return render(request,'dashboard/index.html',context)
+    elif request.method == 'POST':
+        context['error'] = "CANT DO POST /"
+        return HttpResponse(context)
 
 def submitPost(request):
     context = {}
@@ -132,12 +135,22 @@ def submitPost(request):
             obj.display_text = trimDescription(obj.description) #trim the description to make it fit to the card display
             obj.author = user
             obj.save()
+            #This will remove the cache value and set it to None
+            # cache.set(get_cache_key(request), None) #remove the cache key
             return redirect('dashhome')
         else:
             context['error'] = 'Error submitting the post!'
             return render(request,"dashboard/dashboard.html",context)
     else:
         return HttpResponse({"Error":'GET / Method is not allowed!'})
+
+# def expire_page(path):
+#     request = HttpRequest()
+#     request.path = path
+#     key = get_cache_key(request)
+#     if cache.has_key(key):
+#         cache.delete(key)
+
 
 def changeProfile(request,id):
     context = {}
@@ -154,37 +167,34 @@ def changeProfile(request,id):
     else:
         return JsonResponse({"Error":"Request not allowed!"})
 
+@login_required
 def usersPosts(request):
     context = {}
-    if not check_if_logged_in(request): #authenticate the user
-        return redirect('login')
-    else:
-        context['first_name'] = request.session['user'][1]
-        context['logged_in'] = True
-        try:
-            _user = User.objects.filter(pk=request.session['user'][3]).first()
-            users_post = Post.objects.filter(author = _user)
-            print(users_post)
-            context["post"] = users_post
-        except Exception as error:
-            context["post"] = None
-        return render(request,'dashboard/myposts.html',context)
+    context['first_name'] = request.session['user'][1]
+    context['logged_in'] = True
+    try:
+        _user = User.objects.filter(pk=request.session['user'][3]).first()
+        users_post = Post.objects.filter(author = _user)
+        print(users_post)
+        context["post"] = users_post
+    except Exception as error:
+        context["post"] = None
+    return render(request,'dashboard/myposts.html',context)
 
+@login_required
 def editPost(request,id): #shows the user's post, and getting the post ID to query for content
     context = {}
-    if not check_if_logged_in(request):
-        return redirect('login')
-    else:
-        post = Post.objects.filter(pk=id).first()
-        context['post'] = post
-        context['first_name'] = request.session['user'][1]
-        context['logged_in'] = True
-        return render(request,'dashboard/editpostpage.html',context)
+    post = Post.objects.filter(pk=id).first()
+    print(post)
+    context['post'] = post
+    context['first_name'] = request.session['user'][1]
+    context['logged_in'] = True
+    return render(request,'dashboard/editpostpage.html',context)
 
 def comfirmEdits(request,id): #updates the user's post
     context = {}
     if request.method == "POST":
-        _new_description = request.POST.get('description') 
+        _new_description = request.POST.get('description')
         _post_to_edit = Post.objects.filter(pk = id).first()
         _post_to_edit.description = _new_description
         _post_to_edit.display_text = trimDescription(_new_description) # trim the description text to save to the display_text for the post
@@ -200,10 +210,12 @@ def deletePost(request,id): #delete the post. Will get a Post ID in the paramete
     context = {}
     try:
         Post.objects.filter(pk=id).delete() #query to the database to get the Post object, then deletes it
+        # print(f'CACHE KEY - - {get_cache_key(request)}')
+        # cache.set(get_cache_key(request), None)
     except Exception as error:
         context['error'] = "Failed to delete the post! Please try again!"
         return render(request,'dashboard/editpostpage.html',context)
-    return redirect("dashhome") 
+    return redirect("dashhome")
 
 
 def settingsPage(request): #handler to go to the settings page of user's profile
@@ -224,7 +236,7 @@ def settingsPage(request): #handler to go to the settings page of user's profile
         context['logged_in'] = True
         return render(request,'dashboard/settings.html',context)
 
-
+#validate the image url .. if it does not contain an image, make the profile attribute false in order to pass into the webpage
 def validatePostPictures(posts):
     for post in posts:
         try:
@@ -262,7 +274,7 @@ def auth_logout(request):
     except Exception as error:
         print(f'auth_logout error --- {error}')
     return
-    
+
 def authenticate(username,password): #authenticate the user log in crudentials
     user = User.objects.filter(email=username).first() #query the database for the user with the username - returns None if there is no existing user
     if user is not None:
@@ -298,10 +310,10 @@ def updatePassword(request):
         _password = request.POST.get('edit_password') #get the password from the field
         _user = User.objects.filter(pk=request.session['user'][3]).first() # get the user object by getting the user id from the session
         SALT = uuid.uuid4().hex #generate a random salt
-        COMBINED_PASS_SALT = _password + SALT #combine the salt with the password 
+        COMBINED_PASS_SALT = _password + SALT #combine the salt with the password
         _hashed_password = hashlib.sha512(COMBINED_PASS_SALT.encode('utf-8')).hexdigest() # encode the combined password and salt to UTF-8 format
-        
-        # update the salt and the password into the database 
+
+        # update the salt and the password into the database
         _user.salt = SALT
         _user.password = _hashed_password
         try: #handle the exception for updating the user
@@ -322,9 +334,9 @@ import time
 def updateSettingsInformation(request):
     context = {}
     if request.method == "POST":
-        _first_name = request.POST.get('edit_first')  #extract fields from the body  
-        _last_name = request.POST.get('edit_last')    
-        _email_address = request.POST.get('edit_email')  
+        _first_name = request.POST.get('edit_first')  #extract fields from the body
+        _last_name = request.POST.get('edit_last')
+        _email_address = request.POST.get('edit_email')
         try:
             ## Query the user object and then give it new values
             _current_user = User.objects.filter(pk=request.session['user'][3]).first()
@@ -337,12 +349,12 @@ def updateSettingsInformation(request):
             print(f'Error updating the user email/first/last- {error}')
             context['error'] = 'Error updating settings'
             return JsonResponse(context)
-        time.sleep(3) #sleep thread for 3 seconds    
-        return redirect('settingsPage')  
+        # time.sleep(3) #sleep thread for 3 seconds
+        return redirect('settingsPage')
     elif request.method == "GET":
         context['error'] = 'GET METHOD IS NOT ALLOWED'
         return JsonResponse(context)
 
 def updateUserSessionValues(request,user):
-    #update the user session dictionary to a new list
+    #update the user session dictionary to a new list after they have changed their settings
     request.session['user'] = [user.email,user.first_name.title() + ' ' + user.last_name.title(),user.last_name,user.id]

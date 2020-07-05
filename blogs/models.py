@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.utils.functional import cached_property
 
 # Create your models here.
 class User(models.Model):
@@ -10,9 +11,6 @@ class User(models.Model):
     password = models.CharField(max_length=255)
     salt = models.CharField(max_length=60)
     profile = models.ImageField(default=None,blank=True,upload_to="profile_pic/")
-
-    # def __nonzero__(self):
-    #     return bool(self.profile)
 
     def __str__(self):
         return f'Email: {self.email} Name: {self.first_name},{self.last_name}'
