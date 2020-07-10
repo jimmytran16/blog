@@ -26,14 +26,6 @@
                     <h5 class="mb-3">{{user.first_name|title}} {{user.last_name|title}}</h5>
                     <div class="row">
                         <div class="col-md-6">
-                            <h6>About</h6>
-                            <p>
-                                Web Designer, UI/UX Engineer
-                            </p>
-                            <!-- <h6>Hobbies</h6>
-                            <p>
-                                Indie music, skiing and hiking. I love the great outdoors.
-                            </p> -->
                         </div>
                         <div class="col-md-6">
                             <h6>Recent badges</h6>
@@ -219,7 +211,7 @@
             var email_address = document.getElementById("edit_email").value;
             document.getElementById("submit-change-btn").disabled = true; //disable the button as default
             //This function will compare to see if the user's first,last,and email are the same
-            //Purpose of this is so that users arent able to trigger a change if the first,last,and email are currently the same                        
+            //Purpose of this is so that users arent able to trigger a change if the first,last,and email are currently the same
             function checkIfCrudentialsAreDifferent(){
                 const button = document.getElementById("submit-change-btn");
                 const fn = document.getElementById("edit_first").value;
@@ -228,7 +220,7 @@
                 console.log("Old records",first_name,last_name,email_address);
                 console.log("New records",fn,ln,em);
                 if(first_name == fn && last_name ==ln && email_address == em){console.log("TRUE");button.disabled = true;}
-                else{console.log("FALSE");button.disabled = false;}      
+                else{console.log("FALSE");button.disabled = false;}
             }
         </script>
         <script text="text/javascript">

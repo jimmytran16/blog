@@ -11,7 +11,6 @@ from django.views.decorators.cache import cache_page # decorator for caching the
 # REQUEST HANDLERS
 
 @go_to_dash_if_logged_in
-@cache_page(30) #cache the home page for 30 seconds
 def home(request):
     context={}
     post = reversed(validatePostPictures(Post.objects.all()))
@@ -20,6 +19,7 @@ def home(request):
     return render(request,'blogs/index.html',context)
 
 @go_to_dash_if_logged_in
+@cache_page(60*60*10) #cache for 10 hours on client machine
 def register(request): #Register webpage
     context={}
     return render(request,'blogs/register.html')
@@ -68,6 +68,7 @@ def check_email_duplicate(email): # func to determine if an email already exists
         return True
 
 @go_to_dash_if_logged_in
+@cache_page(60*60*10) #cache for 10 hours on client machine
 def login(request):
     context = {}
     return render(request,'blogs/login.html')
@@ -111,13 +112,12 @@ def dashboard(request): # This func will redirect you to the user's dashboard
         return HttpResponse(context)
 
 @login_required
-@cache_page(30)
 def dash_home(request): # home page after user log in
     context = {}
     if request.method == 'GET':
         context['first_name'] = request.session['user'][1]
         context['logged_in'] = True
-        post = validatePostPictures(Post.objects.all())
+        post = reversed(validatePostPictures(Post.objects.all()))
         print(f'Dashhome -- {post}')
         context['post'] = post
         return render(request,'dashboard/index.html',context)
@@ -184,7 +184,6 @@ def usersPosts(request):
     return render(request,'dashboard/myposts.html',context)
 
 @login_required
-@cache_page(30)
 def editPost(request,id): #shows the user's post, and getting the post ID to query for content
     context = {}
     post = Post.objects.filter(pk=id).first()
