@@ -5,12 +5,13 @@ import hashlib, uuid
 from .forms import PostUploadForm
 from .ProfilePicForm import ProfilePicForm
 from .decorators.decor import login_required, go_to_dash_if_logged_in  #import the decorator functions from package
-# from django.views.decorators.cache import cache_page # decorator for caching the view
+from django.views.decorators.cache import cache_page # decorator for caching the view
 
 # Create your views here.
 # REQUEST HANDLERS
 
 @go_to_dash_if_logged_in
+@cache_page(30) #cache the home page for 30 seconds
 def home(request):
     context={}
     post = reversed(validatePostPictures(Post.objects.all()))
@@ -110,6 +111,7 @@ def dashboard(request): # This func will redirect you to the user's dashboard
         return HttpResponse(context)
 
 @login_required
+@cache_page(30)
 def dash_home(request): # home page after user log in
     context = {}
     if request.method == 'GET':
@@ -142,7 +144,7 @@ def submitPost(request):
             context['error'] = 'Error submitting the post!'
             return render(request,"dashboard/dashboard.html",context)
     else:
-        return HttpResponse({"Error":'GET / Method is not allowed!'})
+        return JsonResponse({"Error":'GET / Method is not allowed!'})
 
 # def expire_page(path):
 #     request = HttpRequest()
@@ -151,7 +153,7 @@ def submitPost(request):
 #     if cache.has_key(key):
 #         cache.delete(key)
 
-
+@login_required
 def changeProfile(request,id):
     context = {}
     if request.method == 'POST':
@@ -182,6 +184,7 @@ def usersPosts(request):
     return render(request,'dashboard/myposts.html',context)
 
 @login_required
+@cache_page(30)
 def editPost(request,id): #shows the user's post, and getting the post ID to query for content
     context = {}
     post = Post.objects.filter(pk=id).first()
@@ -191,6 +194,7 @@ def editPost(request,id): #shows the user's post, and getting the post ID to que
     context['logged_in'] = True
     return render(request,'dashboard/editpostpage.html',context)
 
+@login_required
 def comfirmEdits(request,id): #updates the user's post
     context = {}
     if request.method == "POST":
@@ -206,6 +210,7 @@ def comfirmEdits(request,id): #updates the user's post
     else:
         return JsonResponse({"Error":"Method POST not allowed!"})
 
+@login_required
 def deletePost(request,id): #delete the post. Will get a Post ID in the parameter to delete the specfic post
     context = {}
     try:
@@ -217,12 +222,10 @@ def deletePost(request,id): #delete the post. Will get a Post ID in the paramete
         return render(request,'dashboard/editpostpage.html',context)
     return redirect("dashhome")
 
-
+@login_required
 def settingsPage(request): #handler to go to the settings page of user's profile
     context =  {}
-    if not check_if_logged_in(request):
-        return redirect('login')
-    else:
+    if request.method == 'GET':
         user = User.objects.filter(pk=request.session['user'][3]).first() #query to get the users information from the Users model
         try:
             profile = user.profile.url
@@ -235,6 +238,9 @@ def settingsPage(request): #handler to go to the settings page of user's profile
         context['first_name'] = request.session['user'][1]
         context['logged_in'] = True
         return render(request,'dashboard/settings.html',context)
+    elif request.method == 'POST':
+        context['error'] = 'POST REQUEST NOT ALLOWED'
+        return JsonResponse(context)
 
 #validate the image url .. if it does not contain an image, make the profile attribute false in order to pass into the webpage
 def validatePostPictures(posts):
@@ -246,12 +252,11 @@ def validatePostPictures(posts):
     return posts
 
 def trimDescription(text):
-    if len(text) > 35: # Chcking the lenght of the text to simplify it to a display text
+    if len(text) > 35: # Checking the length of the text to simplify it to a display text
         display_text = text[0:34] + '...'
     else:
         display_text = text
     return display_text
-
 
 def readPost(request):
     context = {}

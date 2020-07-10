@@ -8,7 +8,7 @@ def login_required(f):
         #this check the session if user object key exist, if not it will redirect to login page
         #else: continue with the initial request handler function
         if 'user' not in request.session.keys():
-                return HttpResponseRedirect("login")
+                return HttpResponseRedirect("/login")
         return f(request, *args, **kwargs)
     return wrap
 
@@ -17,6 +17,6 @@ def go_to_dash_if_logged_in(f):
     print('inside go_to_dash_if_logged_in()')
     def wrap(request,*args,**kwargs):
         if 'user' in request.session.keys():
-            return HttpResponseRedirect('home')
+            return HttpResponseRedirect('home') #[if use redirect() --- it continiously redirects for some reason!]
         return f(request, *args, **kwargs)
     return wrap

@@ -11,10 +11,16 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from dotenv import load_dotenv
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+#development ONLY!---------------------------------------------------------------------------
+dotenv_path = os.path.join((BASE_DIR),'.env') #find the path to the .env and load it (line 21)
+load_dotenv(dotenv_path)
+#---------------------------------------------------------------------------------------------
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
@@ -91,8 +97,13 @@ DATABASES = {
         'PORT': os.environ.get('PORT_NUM'),
     }
 }
-
-
+# #Use this database for testing
+# import sys
+# if 'test' in sys.argv:
+#     DATABASES['default'] = {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': 'mydatabase'
+#     }
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
