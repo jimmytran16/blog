@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse,HttpResponseRedirect
-from .models import User,Post
+from .models import User,Post,Tags
 import hashlib, uuid
 from .forms import PostUploadForm
 from .ProfilePicForm import ProfilePicForm
@@ -19,13 +19,14 @@ def home(request):
     return render(request,'blogs/index.html',context)
 
 @go_to_dash_if_logged_in
-@cache_page(60*60*10) #cache for 10 hours on client machine
+# @cache_page(60*60*10) #cache for 10 hours on client machine
 def register(request): #Register webpage
     context={}
-    return render(request,'blogs/register.html')
+    context['tags'] = Tags.objects.all() #retrieve all of the tag options in the database
+    return render(request,'blogs/register.html',context)
 
 @go_to_dash_if_logged_in
-def registerSubmit(request): #Register form submitted
+def register_submit(request): #Register form submitted
     if request.method == 'POST':
         context = {}
         #get inputs from the form field
@@ -33,12 +34,20 @@ def registerSubmit(request): #Register form submitted
         _firstname = request.POST.get('first-name')
         _lastname = request.POST.get('last-name')
         _password = request.POST.get('password')
-        print(_password)
+        _tags = request.POST.getlist('skills')
+
+        if _tags: #if selector list is not empty, then get the Tag objects
+            tags_list = getListOfTagsObjects(_tags)
+        else:
+            tags_list = []
+        
+        print('The tags selected {}'.format(_tags))
+
         if check_email_duplicate(_email) is True: #Check if email is already registered
+            context['tags'] = Tags.objects.all()
             context['error'] = 'Email already exist! Please try another email'
             return render(request,'blogs/register.html',context)
-
-        #load the user object with the users crudentials
+        # load the user object with the users crudentials
         try:
             SALT = uuid.uuid4().hex
             print(_password,SALT)
@@ -47,8 +56,12 @@ def registerSubmit(request): #Register form submitted
             print(_hashed_password)
             user = User(first_name=_firstname,last_name=_lastname,email=_email,password=_hashed_password,salt=SALT)
             user.save()
+            if tags_list:
+                user.tags.add(*tags_list)
+                user.save()
         except Exception as error:
             context['error'] = 'Failed to register user!'
+            context['tags'] = Tags.objects.all()
             print(error)
             # go the to register page with error message inside the context
             return render(request,'blogs/register.html',context)
@@ -56,24 +69,13 @@ def registerSubmit(request): #Register form submitted
     else:
         return JsonResponse({"Error":"GET/ METHOD not allowed!"})
 
-def check_email_duplicate(email): # func to determine if an email already exists isn the database
-    try:
-        user = User.objects.filter(email=email).first()
-        if user is not None:
-            return True
-        else:
-            return False
-    except Exception as error:
-        print(f'check_email_duplicate() {error}')
-        return True
-
 @go_to_dash_if_logged_in
-@cache_page(60*60*10) #cache for 10 hours on client machine
+# @cache_page(60*60*10) #cache for 10 hours on client machine
 def login(request):
     context = {}
     return render(request,'blogs/login.html')
 
-def submitLogin(request):
+def submit_login(request):
     #get the username and password fields
     context = {}
     username = request.POST.get('email')
@@ -125,7 +127,7 @@ def dash_home(request): # home page after user log in
         context['error'] = "CANT DO POST /"
         return HttpResponse(context)
 
-def submitPost(request):
+def submit_post(request):
     context = {}
     if request.method == 'POST':
         user = User.objects.filter(pk=str(request.session['user'][3])).first()
@@ -134,7 +136,7 @@ def submitPost(request):
             obj = form.save(commit=False)
             obj.user_id = request.session['user'][3] #assign the post to the current user's user_id from the session
             obj.user_email = request.session['user'][0] #assign the email of the user to the post
-            obj.display_text = trimDescription(obj.description) #trim the description to make it fit to the card display
+            obj.display_text = trim_description(obj.description) #trim the description to make it fit to the card display
             obj.author = user
             obj.save()
             #This will remove the cache value and set it to None
@@ -146,15 +148,8 @@ def submitPost(request):
     else:
         return JsonResponse({"Error":'GET / Method is not allowed!'})
 
-# def expire_page(path):
-#     request = HttpRequest()
-#     request.path = path
-#     key = get_cache_key(request)
-#     if cache.has_key(key):
-#         cache.delete(key)
-
 @login_required
-def changeProfile(request,id):
+def change_profile(request,id):
     context = {}
     if request.method == 'POST':
         instance = User.objects.filter(pk = id).first()
@@ -162,7 +157,7 @@ def changeProfile(request,id):
         if form.is_valid():
             obj = form.save(commit=False)
             obj.save()
-            return redirect('settingsPage')
+            return redirect('settings_page')
         else:
             context['error'] = 'Error uploading profile picture'
             return render(request,"dashboard/dashboard.html",context)
@@ -184,7 +179,7 @@ def usersPosts(request):
     return render(request,'dashboard/myposts.html',context)
 
 @login_required
-def editPost(request,id): #shows the user's post, and getting the post ID to query for content
+def edit_post(request,id): #shows the user's post, and getting the post ID to query for content
     context = {}
     post = Post.objects.filter(pk=id).first()
     print(post)
@@ -194,13 +189,13 @@ def editPost(request,id): #shows the user's post, and getting the post ID to que
     return render(request,'dashboard/editpostpage.html',context)
 
 @login_required
-def comfirmEdits(request,id): #updates the user's post
+def confirm_edits(request,id): #updates the user's post
     context = {}
     if request.method == "POST":
         _new_description = request.POST.get('description')
         _post_to_edit = Post.objects.filter(pk = id).first()
         _post_to_edit.description = _new_description
-        _post_to_edit.display_text = trimDescription(_new_description) # trim the description text to save to the display_text for the post
+        _post_to_edit.display_text = trim_description(_new_description) # trim the description text to save to the display_text for the post
         try:
             _post_to_edit.save()
         except Exception as error:
@@ -210,7 +205,7 @@ def comfirmEdits(request,id): #updates the user's post
         return JsonResponse({"Error":"Method POST not allowed!"})
 
 @login_required
-def deletePost(request,id): #delete the post. Will get a Post ID in the parameter to delete the specfic post
+def delete_post(request,id): #delete the post. Will get a Post ID in the parameter to delete the specfic post
     context = {}
     try:
         Post.objects.filter(pk=id).delete() #query to the database to get the Post object, then deletes it
@@ -222,7 +217,7 @@ def deletePost(request,id): #delete the post. Will get a Post ID in the paramete
     return redirect("dashhome")
 
 @login_required
-def settingsPage(request): #handler to go to the settings page of user's profile
+def settings_page(request): #handler to go to the settings page of user's profile
     context =  {}
     if request.method == 'GET':
         user = User.objects.filter(pk=request.session['user'][3]).first() #query to get the users information from the Users model
@@ -250,14 +245,14 @@ def validatePostPictures(posts):
             post.author.profile = False
     return posts
 
-def trimDescription(text):
+def trim_description(text):
     if len(text) > 35: # Checking the length of the text to simplify it to a display text
         display_text = text[0:34] + '...'
     else:
         display_text = text
     return display_text
 
-def readPost(request):
+def read_post(request):
     context = {}
     post_id = request.GET.get('id')
     post = Post.objects.filter(id=post_id).first()
@@ -305,7 +300,7 @@ def logout(request):
 
 
 # SETTINGS EDITS
-def updatePassword(request):
+def update_password(request):
     #validate if the user is logged in
     #---------------------------------
     #---------------------------------
@@ -326,7 +321,7 @@ def updatePassword(request):
             print("ERROR SAVING THE PASSWORD!")
             context['Error'] = 'Error updating password'
             return JsonResponse(context)
-        return redirect('settingsPage')
+        return redirect('settings_page')
 
     elif request.method == 'GET':
         context['Error'] = 'CANNOT do GET/ request'
@@ -335,7 +330,7 @@ def updatePassword(request):
 import time
 
 #This handler is to update the first name, last name, and email of the user
-def updateSettingsInformation(request):
+def update_setting_information(request):
     context = {}
     if request.method == "POST":
         _first_name = request.POST.get('edit_first')  #extract fields from the body
@@ -354,10 +349,29 @@ def updateSettingsInformation(request):
             context['error'] = 'Error updating settings'
             return JsonResponse(context)
         # time.sleep(3) #sleep thread for 3 seconds
-        return redirect('settingsPage')
+        return redirect('settings_page')
     elif request.method == "GET":
         context['error'] = 'GET METHOD IS NOT ALLOWED'
         return JsonResponse(context)
+
+
+def getListOfTagsObjects(all_tags): #func to get the list of tags
+    tag_list = []
+    for tag in all_tags:
+        tag_list.append(Tags.objects.filter(name=tag).first())
+    return tag_list
+         
+
+def check_email_duplicate(email): # func to determine if an email already exists isn the database
+    try:
+        user = User.objects.filter(email=email).first()
+        if user is not None:
+            return True
+        else:
+            return False
+    except Exception as error:
+        print(f'check_email_duplicate() {error}')
+        return True
 
 def updateUserSessionValues(request,user):
     #update the user session dictionary to a new list after they have changed their settings

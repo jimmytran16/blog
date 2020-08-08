@@ -2,6 +2,13 @@ from django.db import models
 from django.utils import timezone
 from django.utils.functional import cached_property
 
+# This model is for the tags in your profile
+class Tags(models.Model):
+    name = models.CharField(max_length=100)
+    
+    def __str__(self):
+        return self.name
+
 # Create your models here.
 class User(models.Model):
     id = models.AutoField(primary_key=True)
@@ -10,6 +17,7 @@ class User(models.Model):
     email = models.EmailField(max_length=40)
     password = models.CharField(max_length=255)
     salt = models.CharField(max_length=60)
+    tags = models.ManyToManyField(Tags,null=True)
     profile = models.ImageField(default=None,blank=True,upload_to="profile_pic/")
 
     def __str__(self):

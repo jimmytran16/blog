@@ -11,15 +11,14 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-from dotenv import load_dotenv
-
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 #development ONLY!---------------------------------------------------------------------------
-dotenv_path = os.path.join((BASE_DIR),'.env') #find the path to the .env and load it (line 21)
-load_dotenv(dotenv_path)
+# from dotenv import load_dotenv
+# dotenv_path = os.path.join((BASE_DIR),'.env') #find the path to the .env and load it (line 21)
+# load_dotenv(dotenv_path)
 #---------------------------------------------------------------------------------------------
 
 # Quick-start development settings - unsuitable for production
@@ -52,7 +51,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    # 'django.middleware.cache.UpdateCacheMiddleware', #new
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -60,7 +58,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'django.middleware.cache.FetchFromCacheMiddleware', #new
 ]
 
 ROOT_URLCONF = 'blog.urls'

@@ -15,6 +15,6 @@ class PostUploadForm(forms.ModelForm): #forms to upload the profile picture
         fields = [ #These are the fields from the models that you want to include in the forms
             'subject','description','img'
         ]
-        labels = { #These are the labels that you want to change for the attribute when displayed 
+        labels = { #These are the labels that you want to change for the attribute when displayed
             'img':'Image',
         }

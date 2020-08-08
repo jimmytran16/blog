@@ -17,6 +17,14 @@
     -ms-transform: translate(-50%, -50%);
   }
 
+  .skill-selection{
+    margin: 10px 0px;
+  }
+
+  select,label{
+    display: block;
+  }
+
   /* mobile device */
   @media (max-width: 768px) {
     .container {
@@ -41,6 +49,14 @@
     <div class="form-group">
       <label for="exampleInputPassword1">Password</label>
       <input pattern=".{8,}" type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password" required title="8 characters minimum">
+    </div>
+    <div class="skill-selection">
+      <label for="skills">Skills</label>
+      <select name="skills" id="skills" multiple>
+        {% for tag in tags %}
+          <option value="{{ tag.name }}">{{ tag.name }}</option>
+        {% endfor %}
+      </select>
     </div>
     <button type="submit" class="btn btn-primary">Register</button>
   </form>
