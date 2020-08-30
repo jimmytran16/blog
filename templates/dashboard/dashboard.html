@@ -1,23 +1,10 @@
 {% extends 'dashboard/base.html' %}
+{% load static %}
 {% block title %}Dashboard{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/dashboard/dashboard.css' %}">{% endblock %}
 {% block name %}Dashboard{% endblock %}
 {% block content %}
-<style>
-  form{
-    text-align: center;
-  }
-  textarea{
-    width: 100%;
-  }
-  .blog-caption{
-    padding: 20px;
-    color:#007bff;
-  }
-  label{
-    font-weight: bold;
-    text-decoration: underline;
-  }
-</style>
+
 <div class="container">
   {% if error %}
   <span style="color:red;">{{error}}</span>

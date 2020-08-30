@@ -1,0 +1,21 @@
+  .container {
+    background-color: #fbfbfb;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    max-width: 40%;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+  }
+
+  /* mobile device */
+  @media (max-width: 768px) {
+    .container {
+      max-width: 100%;
+    }
+  }

@@ -1,12 +1,9 @@
 {% extends 'dashboard/base.html' %}
+{% load static %}
 {% block title %}Settings{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/dashboard/settings.css' %}">{% endblock %}
 {% block name %}Account{% endblock %}
 {% block content %}
-<style media="screen">
-    img {
-        border-radius: 50%;
-    }
-</style>
 <div class="container">
     <div class="row my-2">
         <div class="col-lg-8 order-lg-2">
@@ -113,7 +110,7 @@
                             </div>
                         </div>
                     </form>
-                   
+
                     <form action="/settings/updatePassword" method="POST"> {% csrf_token %}
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">New Password</label>
@@ -144,45 +141,8 @@
         </div>
         <!-- JQuery -->
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-        <script>
-            var first_name = document.getElementById("edit_first").value;
-            var last_name = document.getElementById("edit_last").value;
-            var email_address = document.getElementById("edit_email").value;
-            document.getElementById("submit-change-btn").disabled = true; //disable the button as default
-            //This function will compare to see if the user's first,last,and email are the same
-            //Purpose of this is so that users arent able to trigger a change if the first,last,and email are currently the same
-            function checkIfCrudentialsAreDifferent(){
-                const button = document.getElementById("submit-change-btn");
-                const fn = document.getElementById("edit_first").value;
-                const ln = document.getElementById("edit_last").value;
-                const em = document.getElementById("edit_email").value;
-                console.log("Old records",first_name,last_name,email_address);
-                console.log("New records",fn,ln,em);
-                if(first_name == fn && last_name ==ln && email_address == em){console.log("TRUE");button.disabled = true;}
-                else{console.log("FALSE");button.disabled = false;}
-            }
-        </script>
-        <script text="text/javascript">
-            function checkPasswordMatch() {
-                var password = $("#first-pass").val();
-                var confirmPassword = $("#second-pass").val();
-                // if passwords don't match, prompt user and disable the save changes button
-                if (password != confirmPassword || password == "" || confirmPassword == "") {
-                    document.getElementById('signup-btn').disabled = true;
-                    if (password == "" || confirmPassword == "") { //if the field is empty
-                        $("#divCheckPasswordMatch").html("Dont Leave fields empty!");
-                    }
-                    else {
-                        $("#divCheckPasswordMatch").html("Passwords do not match!");
-                    }
-                } else {
-                    document.getElementById('signup-btn').disabled = false;
-                    $("#divCheckPasswordMatch").html("");
-                }
-            }
-            $(document).ready(function () {
-                $("#txtNewPassword, #txtConfirmPassword").keyup(checkPasswordMatch);
-            });
+        <script type="text/javascript" src="{% static 'js/dashboard/settings.js' %}">
+
         </script>
         <div class="col-lg-4 order-lg-1 text-center">
             {% if profile is not none %}

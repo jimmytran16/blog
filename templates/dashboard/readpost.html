@@ -2,44 +2,10 @@
 {% load url_target_blank %}
 {% load static %}
 {% block title %}Read{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/dashboard/readpost.css' %}">{% endblock %}
 {% block name %}Post{% endblock %}
 {% block content %}
 
-<style media="screen">
-  img {
-    padding: 20px;
-  }
-
-  .img-container {
-    text-align: center;
-  }
-
-  .subject-text {
-    text-align: center;
-  }
-
-  .small-text {
-    text-align: center;
-  }
-
-  .col-lg-10 {
-    margin: auto;
-  }
-
-  .email-paragraph {
-    padding-right: 10px;
-  }
-
-  .description-text {
-    word-break: break-word;
-  }
-
-  @media (max-width: 1200px) {
-    img {
-      width: 100% !important;
-    }
-  }
-</style>
 
 <div class="container">
   <h1 class="subject-text">{{post.subject}}</h1>

@@ -1,0 +1,42 @@
+img {
+  padding: 20px;
+}
+
+.img-container {
+  text-align: center;
+}
+
+.subject-text {
+  text-align: center;
+}
+
+.small-text {
+  text-align: center;
+}
+
+.col-lg-10 {
+  margin: auto;
+}
+
+.email-paragraph {
+  padding-right: 10px;
+}
+
+.description-text {
+  word-break: break-word;
+}
+
+textarea {
+  width: 100%;
+}
+
+.edit-btns {
+  text-align: center;
+  padding-bottom: 30px;
+}
+
+@media (max-width: 1200px) {
+  img {
+    width: 100% !important;
+  }
+}
